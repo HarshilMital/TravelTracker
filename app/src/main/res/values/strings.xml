@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Travel Tracker</string>
+    <string name="current_stop">Current Stop:</string>
+    <string name="switch_to_miles">Switch to Miles</string>
+    <string name="next_stop">Next Stop</string>
+    <string name="visa_requirement_placeholder">Visa Requirement</string>
 </resources>

@@ -1,0 +1,20 @@
+New York,5800.0,No Visa Required
+London,6800.0,Visa Required
+Dubai,2200.0,No Visa Required
+Delhi,0.0,No Visa Required
+Tokyo,7200.0,Visa Required
+Singapore,3900.0,No Visa Required
+Paris,6900.0,Visa Required
+Berlin,7100.0,Visa Required
+Sydney,8600.0,Visa Required
+Toronto,5700.0,No Visa Required
+San Francisco,6000.0,No Visa Required
+Los Angeles,6200.0,No Visa Required
+Mumbai,100.0,No Visa Required
+Bangkok,3000.0,No Visa Required
+Seoul,7500.0,Visa Required
+Cape Town,9400.0,Visa Required
+Moscow,7200.0,Visa Required
+Istanbul,5100.0,Visa Required
+Mexico City,8800.0,No Visa Required
+Kuala Lumpur,4100.0,No Visa Required
