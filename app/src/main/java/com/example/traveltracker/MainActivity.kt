@@ -1,130 +1,120 @@
 package com.example.traveltracker
 
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.traveltracker.databinding.ActivityMainBinding
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 class MainActivity : ComponentActivity() {
-
-    private lateinit var currentStopText: TextView
-    private lateinit var switchUnitButton: Button
-    private lateinit var nextStopButton: Button
-    private lateinit var resetButton: Button
-    private lateinit var progressBar: ProgressBar
-    private lateinit var binding: ActivityMainBinding
-
-    private var stops = mutableListOf<String>()
-    private var distances = mutableListOf<Double>()
-    private var visaRequirements = mutableListOf<String>()
-
-    private var currentIndex = 0
-    private var distanceUnit = "KM"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        currentStopText = findViewById(R.id.currentStopText)
-        switchUnitButton = findViewById(R.id.switchUnitButton)
-        nextStopButton = findViewById(R.id.nextStopButton)
-        resetButton = findViewById(R.id.resetButton)
-        progressBar = findViewById(R.id.progressBar)
-
-        readDataFromFile()
-        setupUI()
-    }
-
-    private fun setupUI() {
-        updateStopInfo()
-
-
-        progressBar.max = distances.sum().toInt()
-
-        // Set up RecyclerView
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = StopAdapter(getVisibleStops())
-
-        // Switch between kilometers and miles
-        switchUnitButton.setOnClickListener {
-            distanceUnit = if (distanceUnit == "KM") "Miles" else "KM"
-            updateStopInfo()
-        }
-
-        // Move to the next stop
-        nextStopButton.setOnClickListener {
-            if (currentIndex < stops.size - 1) {
-                currentIndex++
-                updateStopInfo()
-            } else {
-                Toast.makeText(this, "Journey Complete!", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Reset journey to the first stop
-        resetButton.setOnClickListener {
-            currentIndex = 0
-            distanceUnit = "KM"
-            updateStopInfo()
-            Toast.makeText(this, "Journey Reset!", Toast.LENGTH_SHORT).show()
+        setContent {
+            TravelTrackerApp(
+                stops = readDataFromFile(),
+                showToast = { message -> Toast.makeText(this, message, Toast.LENGTH_SHORT).show() }
+            )
         }
     }
 
-    private fun updateStopInfo() {
-        val distanceCovered = distances.take(currentIndex).sum()
-        val distanceLeft = distances.drop(currentIndex).sum()
-
-        val convertedDistanceCovered = if (distanceUnit == "KM") distanceCovered else distanceCovered * 0.621371
-        val convertedDistanceLeft = if (distanceUnit == "KM") distanceLeft else distanceLeft * 0.621371
-
-        val unitLabel = if (distanceUnit == "KM") "KM" else "Miles"
-
-        currentStopText.text = buildString {
-            append("Current Stop: ${stops[currentIndex]}\n")
-            append("Distance Covered: %.2f $unitLabel\n".format(convertedDistanceCovered))
-            append("Distance Left: %.2f $unitLabel".format(convertedDistanceLeft))
-        }
-
-        // Update the visa requirement text
-        val visaRequirementText: TextView = findViewById(R.id.visaRequirementText)
-        "Visa Requirement: ${visaRequirements[currentIndex]}".also { visaRequirementText.text = it }
-
-        progressBar.progress = distanceCovered.toInt()
-
-        // Refresh RecyclerView
-        binding.recyclerView.adapter = StopAdapter(getVisibleStops())
-    }
-
-    private fun getVisibleStops(): List<String> {
-        return when {
-            stops.size <= 3 -> stops
-            else -> {
-                val visibleStops = mutableListOf<String>()
-                if (currentIndex > 0) visibleStops.add(stops[currentIndex - 1]) // Previous stop
-                visibleStops.add(stops[currentIndex])
-                if (currentIndex < stops.size - 1) visibleStops.add(stops[currentIndex + 1]) // Next stop
-                visibleStops
-            }
-        }
-    }
-
-    private fun readDataFromFile() {
+    private fun readDataFromFile(): List<Triple<String, Double, String>> {
         val inputStream = resources.openRawResource(R.raw.stops)
-        inputStream.bufferedReader().useLines { lines ->
+        val stopsList = mutableListOf<Triple<String, Double, String>>()
+        BufferedReader(InputStreamReader(inputStream)).useLines { lines ->
             lines.forEach { line ->
                 val parts = line.split(",")
                 if (parts.size == 3) {
-                    stops.add(parts[0].trim())
-                    distances.add(parts[1].trim().toDouble())
-                    visaRequirements.add(parts[2].trim())
+                    stopsList.add(Triple(parts[0].trim(), parts[1].trim().toDouble(), parts[2].trim()))
                 }
             }
+        }
+        return stopsList
+    }
+}
+
+@Composable
+fun TravelTrackerApp(stops: List<Triple<String, Double, String>>, showToast: (String) -> Unit) {
+    var currentIndex by remember { mutableStateOf(0) }
+    var distanceUnit by remember { mutableStateOf("KM") }
+
+    val totalDistance = stops.sumOf { it.second }
+    val distanceCovered = stops.take(currentIndex).sumOf { it.second }
+    val distanceLeft = totalDistance - distanceCovered
+
+    val convertedDistanceCovered = if (distanceUnit == "KM") distanceCovered else distanceCovered * 0.621371
+    val convertedDistanceLeft = if (distanceUnit == "KM") distanceLeft else distanceLeft * 0.621371
+    val unitLabel = if (distanceUnit == "KM") "KM" else "Miles"
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Current Stop: ${stops[currentIndex].first}", fontSize = 18.sp)
+        Text("Distance Covered: %.2f $unitLabel".format(convertedDistanceCovered), fontSize = 16.sp)
+        Text("Distance Left: %.2f $unitLabel".format(convertedDistanceLeft), fontSize = 16.sp)
+        Text("Visa Requirement: ${stops[currentIndex].third}", fontSize = 16.sp)
+
+        LinearProgressIndicator(
+            progress = { (distanceCovered / totalDistance).toFloat() },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        )
+
+        StopList(stops, currentIndex)
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(onClick = { distanceUnit = if (distanceUnit == "KM") "Miles" else "KM" }) {
+                Text("Switch Unit")
+            }
+            Button(onClick = {
+                if (currentIndex < stops.size - 1) {
+                    currentIndex++
+                } else {
+                    showToast("Journey Complete!")
+                }
+            }) {
+                Text("Next Stop")
+            }
+        }
+
+        Button(
+            onClick = {
+                currentIndex = 0
+                distanceUnit = "KM"
+                showToast("Journey Reset!")
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp)
+        ) {
+            Text("Reset")
+        }
+    }
+}
+
+@Composable
+fun StopList(stops: List<Triple<String, Double, String>>, currentIndex: Int) {
+    val visibleStops = when {
+        stops.size <= 3 -> stops
+        else -> {
+            val list = mutableListOf<Triple<String, Double, String>>()
+            if (currentIndex > 0) list.add(stops[currentIndex - 1])
+            list.add(stops[currentIndex])
+            if (currentIndex < stops.size - 1) list.add(stops[currentIndex + 1])
+            list
+        }
+    }
+
+    LazyColumn(modifier = Modifier.fillMaxWidth().height(150.dp).padding(top = 16.dp)) {
+        items(visibleStops) { stop ->
+            Text(text = stop.first, fontSize = 16.sp, modifier = Modifier.padding(8.dp))
         }
     }
 }
