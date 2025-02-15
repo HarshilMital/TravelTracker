@@ -1,7 +1,7 @@
 New York,5800.0,No Visa Required
 London,6800.0,Visa Required
 Dubai,2200.0,No Visa Required
-Delhi,0.0,No Visa Required
+Delhi,4100.0,No Visa Required
 Tokyo,7200.0,Visa Required
 Singapore,3900.0,No Visa Required
 Paris,6900.0,Visa Required
@@ -17,4 +17,4 @@ Cape Town,9400.0,Visa Required
 Moscow,7200.0,Visa Required
 Istanbul,5100.0,Visa Required
 Mexico City,8800.0,No Visa Required
-Kuala Lumpur,4100.0,No Visa Required
+Kuala Lumpur,0.0,No Visa Required

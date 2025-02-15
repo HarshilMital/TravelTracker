@@ -1,46 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- TextView to display current stop -->
     <TextView
         android:id="@+id/currentStopText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/current_stop"
         android:textSize="18sp"
-        android:layout_alignParentTop="true" />
+        android:textStyle="bold" />
 
-    <!-- TextView for displaying visa requirement -->
     <TextView
         android:id="@+id/visaRequirementText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/currentStopText"
-        android:layout_marginTop="8dp"
         android:textSize="16sp"
-        android:textColor="@android:color/black"
-        android:text="@string/visa_requirement_placeholder" />
+        android:textColor="@android:color/black" />
 
-    <!-- Button to switch distance units -->
-    <Button
-        android:id="@+id/switchUnitButton"
-        android:layout_width="wrap_content"
+    <!-- RecyclerView for displaying the dynamic list of stops -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/visaRequirementText"
         android:layout_marginTop="16dp"
-        android:text="@string/switch_to_miles" />
-
-    <!-- Button to reach the next stop -->
-    <Button
-        android:id="@+id/nextStopButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/switchUnitButton"
-        android:layout_marginTop="16dp"
-        android:text="@string/next_stop" />
+        android:nestedScrollingEnabled="false" />
 
     <!-- Progress Bar -->
     <ProgressBar
@@ -48,30 +33,35 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/nextStopButton"
         android:layout_marginTop="16dp" />
 
-    <!-- ListView for displaying stops -->
+    <!-- Button layout at bottom -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:layout_below="@id/progressBar">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-        <!-- Traditional ListView -->
-        <ListView
-            android:id="@+id/listView"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/switchUnitButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:visibility="gone" />
+            android:layout_weight="1"
+            android:text="Switch Unit" />
 
-        <!-- Lazy List RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/nextStopButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:visibility="gone" />
+            android:layout_weight="1"
+            android:text="Next Stop" />
     </LinearLayout>
-
-</RelativeLayout>
+    <Button
+        android:id="@+id/resetButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal"/>
+</LinearLayout>

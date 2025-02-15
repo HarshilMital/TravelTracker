@@ -2,9 +2,7 @@ package com.example.traveltracker
 
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -17,8 +15,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var currentStopText: TextView
     private lateinit var switchUnitButton: Button
     private lateinit var nextStopButton: Button
+    private lateinit var resetButton: Button
     private lateinit var progressBar: ProgressBar
-    private lateinit var stopsListView: ListView
     private lateinit var binding: ActivityMainBinding
 
     private var stops = mutableListOf<String>()
@@ -30,39 +28,28 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         currentStopText = findViewById(R.id.currentStopText)
         switchUnitButton = findViewById(R.id.switchUnitButton)
         nextStopButton = findViewById(R.id.nextStopButton)
+        resetButton = findViewById(R.id.resetButton)
         progressBar = findViewById(R.id.progressBar)
-        stopsListView = findViewById(R.id.listView)
 
         readDataFromFile()
-
         setupUI()
-
-        if (stops.size <= 3) {
-            // Traditional ListView
-            stopsListView.visibility = View.VISIBLE
-            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, stops)
-            stopsListView.adapter = adapter
-        } else {
-            // Lazy List with RecyclerView
-            binding.recyclerView.visibility = View.VISIBLE
-            binding.recyclerView.layoutManager = LinearLayoutManager(this)
-            binding.recyclerView.adapter = StopAdapter(stops)
-        }
     }
 
     private fun setupUI() {
-        // Show current stop
         updateStopInfo()
 
-        // Set progress bar max
+
         progressBar.max = distances.sum().toInt()
+
+        // Set up RecyclerView
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = StopAdapter(getVisibleStops())
 
         // Switch between kilometers and miles
         switchUnitButton.setOnClickListener {
@@ -78,6 +65,14 @@ class MainActivity : ComponentActivity() {
             } else {
                 Toast.makeText(this, "Journey Complete!", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        // Reset journey to the first stop
+        resetButton.setOnClickListener {
+            currentIndex = 0
+            distanceUnit = "KM"
+            updateStopInfo()
+            Toast.makeText(this, "Journey Reset!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -101,6 +96,22 @@ class MainActivity : ComponentActivity() {
         "Visa Requirement: ${visaRequirements[currentIndex]}".also { visaRequirementText.text = it }
 
         progressBar.progress = distanceCovered.toInt()
+
+        // Refresh RecyclerView
+        binding.recyclerView.adapter = StopAdapter(getVisibleStops())
+    }
+
+    private fun getVisibleStops(): List<String> {
+        return when {
+            stops.size <= 3 -> stops
+            else -> {
+                val visibleStops = mutableListOf<String>()
+                if (currentIndex > 0) visibleStops.add(stops[currentIndex - 1]) // Previous stop
+                visibleStops.add(stops[currentIndex])
+                if (currentIndex < stops.size - 1) visibleStops.add(stops[currentIndex + 1]) // Next stop
+                visibleStops
+            }
+        }
     }
 
     private fun readDataFromFile() {
